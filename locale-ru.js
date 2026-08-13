@@ -68,7 +68,7 @@ function decorateToday() {
       const dateLabel = isTodayEvent ? 'Сегодня' : upcomingEvent.startsAt.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });
       upcomingPanel.innerHTML = `<div class="panel-head"><h2>Дальше</h2><i data-lucide="clock-3"></i></div><div class="event"><span class="next-event-date">${dateLabel}</span><strong>${upcomingEvent.startTime || 'Весь день'} — ${esc(upcomingEvent.title)}</strong>${upcomingEvent.description ? `<span class="meta">${esc(upcomingEvent.description)}</span>` : ''}</div>`;
     } else {
-      upcomingPanel.innerHTML = `<div class="panel-head"><h2>Дальше</h2><i data-lucide="clock-3"></i></div><p class="muted">В календаре пока нет предстоящих событий.</p>`;
+      upcomingPanel.innerHTML = `<div class="panel-head"><h2>Дальше</h2><i data-lucide="clock-3"></i></div><div class="next-empty"><strong>У тебя свободное окно</strong><span>Ближайших событий сегодня нет.</span><button data-view="calendar">Открыть календарь<i data-lucide="arrow-right"></i></button></div>`;
     }
   }
   const left = page.querySelector('.dashboard-grid > .stack');
@@ -96,6 +96,12 @@ function decorateToday() {
     ].filter(group => group.tasks.length);
     todayPanel.innerHTML = `<div class="panel-head"><h2><i data-lucide="calendar-days"></i>Сегодня</h2><span class="meta">${timelineTasks.filter(task => task.completed).length} выполнено</span></div>${groups.length ? `<div class="timeline-groups">${groups.map(group => `<div class="timeline-group ${group.className}"><div class="time-label"><i data-lucide="${group.icon}"></i><span>${group.label}</span></div><div class="time-tasks">${group.tasks.map(task => taskRow(task, false)).join('')}</div></div>`).join('')}</div>` : '<div class="timeline-empty"><i data-lucide="calendar-check"></i><strong>На сегодня пока ничего нет</strong><span>Добавь задачу, и она появится в планере.</span></div>'}<button class="timeline-add" data-add-type="task"><i data-lucide="plus"></i>Добавить задачу</button>`;
   }
+  page.querySelectorAll('.dashboard-grid > .stack:first-child .row-actions .icon-btn').forEach(button => {
+    button.classList.add('task-delete-action');
+    button.title = 'Удалить задачу';
+  });
+  const gratitudeInput = page.querySelector('#quick-gratitude');
+  if (gratitudeInput) gratitudeInput.placeholder = 'Сегодня я благодарна за...';
   left?.insertAdjacentHTML('beforeend', `<div class="daily-note"><i data-lucide="sparkles"></i><span>Маленькие шаги каждый день приводят к большим результатам.</span><i data-lucide="heart"></i></div>`);
   icon();
 }
