@@ -78,6 +78,18 @@ function decorateProject() {
   icon();
 }
 
+function decorateProjectList() {
+  if (view !== 'projects') return;
+  document.querySelectorAll('#app .project-card[data-project]').forEach(card => {
+    if (card.querySelector('[data-delete-project]')) return;
+    const projectId = card.dataset.project;
+    const currentProject = state.projects.find(item => item.id === projectId);
+    if (!currentProject) return;
+    card.insertAdjacentHTML('beforeend', `<button class="project-card-delete" data-delete-project="${projectId}" aria-label="Удалить проект ${esc(currentProject.title)}" title="Удалить проект"><i data-lucide="trash-2"></i></button>`);
+  });
+  icon();
+}
+
 habitsView = function habitsViewWithDelete() {
   const dates = weekDates();
   return `<section class="page">${header('Привычки','Небольшие повторения, на которых держатся хорошие недели.',`<button class="primary-btn" data-add-type="habit"><i data-lucide="plus"></i>Новая привычка</button>`)}<section class="panel habit-table"><div class="habit-grid habit-grid-actions"><b>Текущая неделя</b>${dates.map(date => `<span class="meta habit-day-label">${['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'][date.getDay()]}</span>`).join('')}<b class="meta">Ритм</b><span></span>${state.habits.map(habit => `<strong class="habit-name">${esc(habit.title)}</strong>${dates.map(date => { const dateString = date.toISOString().slice(0,10); const done = isHabitDone(habit.id,dateString); return `<button class="day-check ${done?'done':''}" data-habit="${habit.id}" data-date="${dateString}" aria-label="Отметить ${esc(habit.title)}">${done?'<i data-lucide="check"></i>':''}</button>`; }).join('')}<span class="meta">${habitWeekPercent(habit.id,dates)}% · ${streak(habit.id)} дн.</span><button class="habit-delete" data-delete-habit="${habit.id}" aria-label="Удалить привычку ${esc(habit.title)}" title="Удалить привычку"><i data-lucide="trash-2"></i></button>`).join('')}</div></section></section>`;
@@ -163,5 +175,6 @@ render = function renderRussianTheme() {
   baseRender();
   decorateToday();
   decorateProject();
+  decorateProjectList();
 };
 render();
