@@ -60,11 +60,20 @@ function decorateToday() {
   }
   if (todayPanel) {
     todayPanel.classList.add('today-timeline');
-    const timelineTasks = state.tasks.filter(task => task.dueDate === today()).slice(0, 7);
+    const timelineTasks = state.tasks
+      .filter(task => task.dueDate === today())
+      .sort((a, b) => {
+        if (a.time && b.time) return a.time.localeCompare(b.time);
+        if (a.time) return -1;
+        if (b.time) return 1;
+        return a.createdAt - b.createdAt;
+      })
+      .slice(0, 7);
     const groups = [
-      { label: 'Утро', icon: 'sunrise', className: 'morning', tasks: timelineTasks.filter((task, index) => (task.time && task.time < '11:00') || (!task.time && index % 3 === 0)) },
-      { label: 'День', icon: 'sun', className: 'afternoon', tasks: timelineTasks.filter((task, index) => (task.time >= '11:00' && task.time < '17:00') || (!task.time && index % 3 !== 0)) },
+      { label: 'Утро', icon: 'sunrise', className: 'morning', tasks: timelineTasks.filter(task => task.time && task.time < '12:00') },
+      { label: 'День', icon: 'sun', className: 'afternoon', tasks: timelineTasks.filter(task => task.time >= '12:00' && task.time < '17:00') },
       { label: 'Вечер', icon: 'moon-star', className: 'evening', tasks: timelineTasks.filter(task => task.time >= '17:00') }
+      ,{ label: 'Без времени', icon: 'list-todo', className: 'anytime', tasks: timelineTasks.filter(task => !task.time) }
     ].filter(group => group.tasks.length);
     todayPanel.innerHTML = `<div class="panel-head"><h2><i data-lucide="calendar-days"></i>Сегодня</h2><span class="meta">${timelineTasks.filter(task => task.completed).length} выполнено</span></div>${groups.length ? `<div class="timeline-groups">${groups.map(group => `<div class="timeline-group ${group.className}"><div class="time-label"><i data-lucide="${group.icon}"></i><span>${group.label}</span></div><div class="time-tasks">${group.tasks.map(task => taskRow(task, false)).join('')}</div></div>`).join('')}</div>` : '<div class="timeline-empty"><i data-lucide="calendar-check"></i><strong>На сегодня пока ничего нет</strong><span>Добавь задачу, и она появится в планере.</span></div>'}<button class="timeline-add" data-add-type="task"><i data-lucide="plus"></i>Добавить задачу</button>`;
   }
