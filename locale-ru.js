@@ -49,7 +49,7 @@ function decorateToday() {
   const tasks = state.tasks.filter(task => task.dueDate === today());
   const completed = tasks.filter(task => task.completed).length;
   const percent = tasks.length ? Math.round(completed / tasks.length * 100) : 0;
-  header.insertAdjacentHTML('beforeend', `<div class="hero-portrait" role="img" aria-label="Портрет Людмилы"></div><div class="header-tools" aria-hidden="true"><i data-lucide="search"></i><i data-lucide="bell"></i></div><div class="profile-cluster" aria-label="Профиль Людмилы"><span class="profile-avatar"></span></div>`);
+  header.insertAdjacentHTML('beforeend', `<div class="hero-portrait" role="img" aria-label="Портрет Людмилы"></div><div class="header-tools" aria-hidden="true"><i data-lucide="search"></i><i data-lucide="bell"></i></div>`);
   side.insertAdjacentHTML('afterbegin', `<section class="panel day-progress"><div class="panel-head"><h2><i data-lucide="chart-no-axes-column-increasing"></i>Прогресс дня</h2></div><div class="progress-overview"><div class="progress-ring" style="--progress:${percent}"><svg viewBox="0 0 44 44" aria-label="Выполнено ${percent}%"><circle cx="22" cy="22" r="18"></circle><circle class="ring-value" cx="22" cy="22" r="18" pathLength="100" style="stroke-dasharray:${percent} 100"></circle></svg><strong>${percent}%</strong></div><div><b>${completed} из ${tasks.length} выполнено</b><span>Маленькие шаги тоже считаются.</span></div></div></section>`);
   const left = page.querySelector('.dashboard-grid > .stack');
   const todayPanel = left?.querySelectorAll('.panel')[1];
