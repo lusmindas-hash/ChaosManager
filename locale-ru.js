@@ -33,6 +33,7 @@ const referenceTasks = [
   { title: 'Тренировка', time: '19:00', priority: 'low', projectId: '' }
 ];
 for (const task of referenceTasks) {
+  if (task.projectId && !state.projects.some(project => project.id === task.projectId)) continue;
   if (!state.tasks.some(item => item.title === task.title)) {
     state.tasks.push({ id: uid(), ...task, completed: false, dueDate: today(), createdAt: Date.now() });
   }
@@ -64,6 +65,16 @@ function decorateToday() {
     todayPanel.innerHTML = `<div class="panel-head"><h2><i data-lucide="calendar-days"></i>Сегодня</h2><span class="meta">${timelineTasks.filter(task => task.completed).length} выполнено</span></div><div class="timeline-groups">${groups.map(group => `<div class="timeline-group ${group.className}"><div class="time-label"><i data-lucide="${group.icon}"></i><span>${group.label}</span></div><div class="time-tasks">${group.tasks.map(task => taskRow(task, false)).join('')}</div></div>`).join('')}</div><button class="timeline-add" data-add-type="task"><i data-lucide="plus"></i>Добавить задачу</button>`;
   }
   left?.insertAdjacentHTML('beforeend', `<div class="daily-note"><i data-lucide="sparkles"></i><span>Маленькие шаги каждый день приводят к большим результатам.</span><i data-lucide="heart"></i></div>`);
+  icon();
+}
+
+function decorateProject() {
+  if (!view.startsWith('project/')) return;
+  const projectId = view.split('/')[1];
+  const currentProject = state.projects.find(item => item.id === projectId);
+  const actions = document.querySelector('#app .page-header .header-actions');
+  if (!currentProject || !actions || actions.querySelector('[data-delete-project]')) return;
+  actions.insertAdjacentHTML('beforeend', `<button class="project-delete-button" data-delete-project="${currentProject.id}"><i data-lucide="trash-2"></i>Удалить проект</button>`);
   icon();
 }
 
@@ -127,9 +138,30 @@ document.addEventListener('click', event => {
   toast('Событие удалено');
 }, true);
 
+document.addEventListener('click', event => {
+  const button = event.target.closest('[data-delete-project]');
+  if (!button) return;
+  const currentProject = state.projects.find(item => item.id === button.dataset.deleteProject);
+  if (!currentProject) return;
+  const taskCount = state.tasks.filter(item => item.projectId === currentProject.id).length;
+  const message = taskCount
+    ? `Удалить проект «${currentProject.title}» и все связанные задачи (${taskCount})? Это действие нельзя отменить.`
+    : `Удалить проект «${currentProject.title}»? Это действие нельзя отменить.`;
+  if (!confirm(message)) return;
+  state.projects = state.projects.filter(item => item.id !== currentProject.id);
+  state.tasks = state.tasks.filter(item => item.projectId !== currentProject.id);
+  state.events = state.events.map(item => item.projectId === currentProject.id ? { ...item, projectId: '' } : item);
+  save();
+  view = 'projects';
+  location.hash = 'projects';
+  render();
+  toast('Проект полностью удалён');
+});
+
 const baseRender = render;
 render = function renderRussianTheme() {
   baseRender();
   decorateToday();
+  decorateProject();
 };
 render();
