@@ -53,7 +53,11 @@ function decorateToday() {
   header.insertAdjacentHTML('beforeend', `<div class="hero-portrait" role="img" aria-label="Портрет Людмилы"></div><div class="header-tools" aria-hidden="true"><i data-lucide="search"></i><i data-lucide="bell"></i></div>`);
   side.insertAdjacentHTML('afterbegin', `<section class="panel day-progress"><div class="panel-head"><h2><i data-lucide="chart-no-axes-column-increasing"></i>Прогресс дня</h2></div><div class="progress-overview"><div class="progress-ring" style="--progress:${percent}"><svg viewBox="0 0 44 44" aria-label="Выполнено ${percent}%"><circle cx="22" cy="22" r="18"></circle><circle class="ring-value" cx="22" cy="22" r="18" pathLength="100" style="stroke-dasharray:${percent} 100"></circle></svg><strong>${percent}%</strong></div><div><b>${completed} из ${tasks.length} выполнено</b><span>Маленькие шаги тоже считаются.</span></div></div></section>`);
   const left = page.querySelector('.dashboard-grid > .stack');
-  const todayPanel = left?.querySelectorAll('.panel')[1];
+  let todayPanel = left?.querySelectorAll('.panel')[1];
+  if (!todayPanel && left) {
+    left.insertAdjacentHTML('beforeend', '<section class="panel today-timeline"></section>');
+    todayPanel = left.querySelector('.today-timeline');
+  }
   if (todayPanel) {
     todayPanel.classList.add('today-timeline');
     const timelineTasks = state.tasks.filter(task => task.dueDate === today()).slice(0, 7);
@@ -62,7 +66,7 @@ function decorateToday() {
       { label: 'День', icon: 'sun', className: 'afternoon', tasks: timelineTasks.filter((task, index) => (task.time >= '11:00' && task.time < '17:00') || (!task.time && index % 3 !== 0)) },
       { label: 'Вечер', icon: 'moon-star', className: 'evening', tasks: timelineTasks.filter(task => task.time >= '17:00') }
     ].filter(group => group.tasks.length);
-    todayPanel.innerHTML = `<div class="panel-head"><h2><i data-lucide="calendar-days"></i>Сегодня</h2><span class="meta">${timelineTasks.filter(task => task.completed).length} выполнено</span></div><div class="timeline-groups">${groups.map(group => `<div class="timeline-group ${group.className}"><div class="time-label"><i data-lucide="${group.icon}"></i><span>${group.label}</span></div><div class="time-tasks">${group.tasks.map(task => taskRow(task, false)).join('')}</div></div>`).join('')}</div><button class="timeline-add" data-add-type="task"><i data-lucide="plus"></i>Добавить задачу</button>`;
+    todayPanel.innerHTML = `<div class="panel-head"><h2><i data-lucide="calendar-days"></i>Сегодня</h2><span class="meta">${timelineTasks.filter(task => task.completed).length} выполнено</span></div>${groups.length ? `<div class="timeline-groups">${groups.map(group => `<div class="timeline-group ${group.className}"><div class="time-label"><i data-lucide="${group.icon}"></i><span>${group.label}</span></div><div class="time-tasks">${group.tasks.map(task => taskRow(task, false)).join('')}</div></div>`).join('')}</div>` : '<div class="timeline-empty"><i data-lucide="calendar-check"></i><strong>На сегодня пока ничего нет</strong><span>Добавь задачу, и она появится в планере.</span></div>'}<button class="timeline-add" data-add-type="task"><i data-lucide="plus"></i>Добавить задачу</button>`;
   }
   left?.insertAdjacentHTML('beforeend', `<div class="daily-note"><i data-lucide="sparkles"></i><span>Маленькие шаги каждый день приводят к большим результатам.</span><i data-lucide="heart"></i></div>`);
   icon();
