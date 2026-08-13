@@ -92,7 +92,7 @@ function decorateProjectList() {
 
 habitsView = function habitsViewWithDelete() {
   const dates = weekDates();
-  return `<section class="page">${header('Привычки','Небольшие повторения, на которых держатся хорошие недели.',`<button class="primary-btn" data-add-type="habit"><i data-lucide="plus"></i>Новая привычка</button>`)}<section class="panel habit-table"><div class="habit-grid habit-grid-actions"><b>Текущая неделя</b>${dates.map(date => `<span class="meta habit-day-label">${['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'][date.getDay()]}</span>`).join('')}<b class="meta">Ритм</b><span></span>${state.habits.map(habit => `<strong class="habit-name">${esc(habit.title)}</strong>${dates.map(date => { const dateString = date.toISOString().slice(0,10); const done = isHabitDone(habit.id,dateString); return `<button class="day-check ${done?'done':''}" data-habit="${habit.id}" data-date="${dateString}" aria-label="Отметить ${esc(habit.title)}">${done?'<i data-lucide="check"></i>':''}</button>`; }).join('')}<span class="meta">${habitWeekPercent(habit.id,dates)}% · ${streak(habit.id)} дн.</span><button class="habit-delete" data-delete-habit="${habit.id}" aria-label="Удалить привычку ${esc(habit.title)}" title="Удалить привычку"><i data-lucide="trash-2"></i></button>`).join('')}</div></section></section>`;
+  return `<section class="page">${header('Привычки','Небольшие повторения, на которых держатся хорошие недели.',`<button class="primary-btn" data-add-type="habit"><i data-lucide="plus"></i>Новая привычка</button>`)}<section class="panel habit-table"><div class="habit-grid habit-grid-actions"><b>Текущая неделя</b>${dates.map(date => `<span class="meta habit-day-label">${['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'][date.getDay()]}</span>`).join('')}<b class="meta">Ритм</b><span></span>${state.habits.map(habit => `<strong class="habit-name">${esc(habit.title)}</strong>${dates.map(date => { const dateString = localDateKey(date); const done = isHabitDone(habit.id,dateString); return `<button class="day-check ${done?'done':''}" data-habit="${habit.id}" data-date="${dateString}" aria-label="Отметить ${esc(habit.title)}">${done?'<i data-lucide="check"></i>':''}</button>`; }).join('')}<span class="meta">${habitWeekPercent(habit.id,dates)}% · ${streak(habit.id)} дн.</span><button class="habit-delete" data-delete-habit="${habit.id}" aria-label="Удалить привычку ${esc(habit.title)}" title="Удалить привычку"><i data-lucide="trash-2"></i></button>`).join('')}</div></section></section>`;
 };
 
 document.addEventListener('click', event => {
@@ -169,6 +169,56 @@ document.addEventListener('click', event => {
   render();
   toast('Проект полностью удалён');
 });
+
+const baseOpenModal = openModal;
+openModal = function openModalWithSchedule(type = 'inbox', defaults = {}) {
+  baseOpenModal(type, defaults);
+  if (type !== 'event') return;
+  const startDate = document.querySelector('#f-date')?.value || today();
+  const endDate = new Date(`${startDate}T12:00:00`);
+  endDate.setFullYear(endDate.getFullYear() + 1);
+  const actions = document.querySelector('#add-form .modal-actions');
+  actions?.insertAdjacentHTML('beforebegin', `<div class="schedule-fields"><div class="field"><label>Повторять</label><select id="f-repeat"><option value="none">Не повторять</option><option value="weekly">Каждую неделю</option></select></div><div class="field repeat-until-field" hidden><label>Расписание до</label><input id="f-repeat-until" type="date" value="${localDateKey(endDate)}" min="${startDate}" max="${localDateKey(endDate)}"></div><p class="schedule-hint" hidden>Будут созданы занятия на этот день недели, максимум на год вперёд.</p></div>`);
+};
+
+document.addEventListener('change', event => {
+  if (event.target.id !== 'f-repeat') return;
+  const isWeekly = event.target.value === 'weekly';
+  document.querySelector('.repeat-until-field')?.toggleAttribute('hidden', !isWeekly);
+  document.querySelector('.schedule-hint')?.toggleAttribute('hidden', !isWeekly);
+});
+
+const baseSubmitForm = submitForm;
+submitForm = function submitFormWithSchedule(form) {
+  const isWeeklyEvent = form.dataset.type === 'event' && value('f-repeat') === 'weekly';
+  const eventData = isWeeklyEvent ? {
+    title: value('f-title').trim(),
+    date: value('f-date'),
+    startTime: value('f-time'),
+    description: value('f-description'),
+    until: value('f-repeat-until')
+  } : null;
+  baseSubmitForm(form);
+  if (!eventData?.title || !eventData.date || !eventData.until) return;
+  const seriesId = uid();
+  const original = state.events.findLast ? state.events.findLast(item => item.title === eventData.title && item.date === eventData.date && item.startTime === eventData.startTime) : [...state.events].reverse().find(item => item.title === eventData.title && item.date === eventData.date && item.startTime === eventData.startTime);
+  if (original) original.seriesId = seriesId;
+  const cursor = new Date(`${eventData.date}T12:00:00`);
+  const requestedEnd = new Date(`${eventData.until}T12:00:00`);
+  const maximumEnd = new Date(cursor);
+  maximumEnd.setFullYear(maximumEnd.getFullYear() + 1);
+  const end = requestedEnd < maximumEnd ? requestedEnd : maximumEnd;
+  let created = 1;
+  cursor.setDate(cursor.getDate() + 7);
+  while (cursor <= end) {
+    state.events.push({ id: uid(), title: eventData.title, date: localDateKey(cursor), startTime: eventData.startTime, endTime: '', description: eventData.description, projectId: '', seriesId });
+    created++;
+    cursor.setDate(cursor.getDate() + 7);
+  }
+  save();
+  render();
+  toast(`Расписание добавлено: ${created} занятий`);
+};
 
 const baseRender = render;
 render = function renderRussianTheme() {
