@@ -51,3 +51,4 @@ html,body{background:#0b0c13;color:var(--ink)}.app-shell{background:#10111b;box-
 .reference-today .timeline-add{background:#8b6ff7;color:#fff!important;font-weight:700;box-shadow:0 8px 22px rgba(102,76,224,.4)}.reference-today .timeline-add svg{stroke:#fff}
 .sidebar-art,.page-header:after,.hero-portrait:before{display:none!important}.reference-today .gratitude-box{background-image:none!important}
 .hero-portrait,.profile-avatar{background-image:url('cover.png')}
+.habit-grid-actions{grid-template-columns:minmax(150px,1.5fr) repeat(7,42px) 90px 42px}.habit-day-label{text-align:center}.habit-delete{width:34px;height:34px;padding:0;border:1px solid #3a3c4b;border-radius:7px;background:#202230;color:#a8a8b7;display:grid;place-items:center;margin:auto;transition:.16s}.habit-delete svg{width:16px}.habit-delete:hover,.habit-delete:focus-visible{background:#3c272d;border-color:#804840;color:#ff9a91;outline:none}.habit-name{overflow-wrap:anywhere}

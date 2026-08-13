@@ -67,6 +67,23 @@ function decorateToday() {
   icon();
 }
 
+habitsView = function habitsViewWithDelete() {
+  const dates = weekDates();
+  return `<section class="page">${header('Привычки','Небольшие повторения, на которых держатся хорошие недели.',`<button class="primary-btn" data-add-type="habit"><i data-lucide="plus"></i>Новая привычка</button>`)}<section class="panel habit-table"><div class="habit-grid habit-grid-actions"><b>Текущая неделя</b>${dates.map(date => `<span class="meta habit-day-label">${['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'][date.getDay()]}</span>`).join('')}<b class="meta">Ритм</b><span></span>${state.habits.map(habit => `<strong class="habit-name">${esc(habit.title)}</strong>${dates.map(date => { const dateString = date.toISOString().slice(0,10); const done = isHabitDone(habit.id,dateString); return `<button class="day-check ${done?'done':''}" data-habit="${habit.id}" data-date="${dateString}" aria-label="Отметить ${esc(habit.title)}">${done?'<i data-lucide="check"></i>':''}</button>`; }).join('')}<span class="meta">${habitWeekPercent(habit.id,dates)}% · ${streak(habit.id)} дн.</span><button class="habit-delete" data-delete-habit="${habit.id}" aria-label="Удалить привычку ${esc(habit.title)}" title="Удалить привычку"><i data-lucide="trash-2"></i></button>`).join('')}</div></section></section>`;
+};
+
+document.addEventListener('click', event => {
+  const button = event.target.closest('[data-delete-habit]');
+  if (!button) return;
+  const habit = state.habits.find(item => item.id === button.dataset.deleteHabit);
+  if (!habit || !confirm(`Удалить привычку «${habit.title}» вместе со всеми отметками?`)) return;
+  state.habits = state.habits.filter(item => item.id !== habit.id);
+  delete state.habitCompletions[habit.id];
+  save();
+  render();
+  toast('Привычка удалена');
+});
+
 const baseRender = render;
 render = function renderRussianTheme() {
   baseRender();
