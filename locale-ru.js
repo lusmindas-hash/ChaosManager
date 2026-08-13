@@ -84,6 +84,49 @@ document.addEventListener('click', event => {
   toast('Привычка удалена');
 });
 
+function openDayPanel(date) {
+  const events = state.events.filter(item => item.date === date).sort((a,b) => a.startTime.localeCompare(b.startTime));
+  const tasks = state.tasks.filter(item => item.dueDate === date);
+  const formattedDate = new Date(`${date}T12:00:00`).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+  document.querySelector('#modal-root').innerHTML = `<div class="modal-backdrop"><div class="modal day-modal" role="dialog" aria-modal="true" aria-labelledby="day-title"><div class="modal-head"><div><p class="eyebrow">Календарь</p><h2 id="day-title">${formattedDate}</h2></div><button class="icon-btn" data-close aria-label="Закрыть"><i data-lucide="x"></i></button></div><div class="modal-body"><section class="day-section"><div class="day-section-head"><h3>События</h3><button class="day-add-link" data-day-add-event="${date}"><i data-lucide="plus"></i>Событие</button></div>${events.length ? events.map(item => `<article class="day-event-row"><div class="day-event-time">${item.startTime || 'Весь день'}</div><div class="day-event-copy"><strong>${esc(item.title)}</strong>${item.description ? `<span>${esc(item.description)}</span>` : ''}</div><button class="event-delete" data-delete-event="${item.id}" aria-label="Удалить событие ${esc(item.title)}" title="Удалить событие"><i data-lucide="trash-2"></i></button></article>`).join('') : `<div class="day-empty">На этот день событий нет.</div>`}</section><section class="day-section"><div class="day-section-head"><h3>Задачи</h3><button class="day-add-link" data-day-add-task="${date}"><i data-lucide="plus"></i>Задача</button></div>${tasks.length ? tasks.map(item => `<div class="day-task-row"><span class="check ${item.completed?'done':''}">${item.completed?'<i data-lucide="check"></i>':''}</span><div><strong>${esc(item.title)}</strong>${item.time?`<span>${item.time}</span>`:''}</div></div>`).join('') : `<div class="day-empty">Задач пока нет.</div>`}</section></div></div></div>`;
+  icon();
+}
+
+document.addEventListener('click', event => {
+  const day = event.target.closest('[data-day]');
+  if (day) {
+    event.preventDefault();
+    event.stopPropagation();
+    openDayPanel(day.dataset.day);
+    return;
+  }
+  const addEvent = event.target.closest('[data-day-add-event]');
+  if (addEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    openModal('event', { date: addEvent.dataset.dayAddEvent });
+    return;
+  }
+  const addTask = event.target.closest('[data-day-add-task]');
+  if (addTask) {
+    event.preventDefault();
+    event.stopPropagation();
+    openModal('task', { date: addTask.dataset.dayAddTask });
+    return;
+  }
+  const deleteButton = event.target.closest('[data-delete-event]');
+  if (!deleteButton) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const calendarEvent = state.events.find(item => item.id === deleteButton.dataset.deleteEvent);
+  if (!calendarEvent || !confirm(`Удалить событие «${calendarEvent.title}»?`)) return;
+  const date = calendarEvent.date;
+  state.events = state.events.filter(item => item.id !== calendarEvent.id);
+  save();
+  openDayPanel(date);
+  toast('Событие удалено');
+}, true);
+
 const baseRender = render;
 render = function renderRussianTheme() {
   baseRender();
