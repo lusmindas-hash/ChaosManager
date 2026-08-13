@@ -50,3 +50,4 @@ html,body{background:#0b0c13;color:var(--ink)}.app-shell{background:#10111b;box-
 .hero-portrait:before{display:none}.sidebar-art{display:none}.reference-today .gratitude-box{background-image:none!important;background:#211d27!important}.reference-today .timeline-group .task-row{padding:2px 0}.reference-today .timeline-group .task-tags{margin-top:0}.reference-today .timeline-groups{gap:4px}.reference-today .timeline-add{min-height:34px;height:34px;margin-top:3px}
 .reference-today .timeline-add{background:#8b6ff7;color:#fff!important;font-weight:700;box-shadow:0 8px 22px rgba(102,76,224,.4)}.reference-today .timeline-add svg{stroke:#fff}
 .sidebar-art,.page-header:after,.hero-portrait:before{display:none!important}.reference-today .gratitude-box{background-image:none!important}
+.hero-portrait,.profile-avatar{background-image:url('cover.png')}
