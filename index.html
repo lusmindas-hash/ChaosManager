@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f5f1">
+  <title>Chaos Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Основная навигация">
+      <div class="brand"><span class="brand-mark">C</span><div><strong>CHAOS</strong><small>Turn chaos into clarity.</small></div></div>
+      <nav id="main-nav"></nav>
+      <button class="nav-item settings-link" data-view="settings"><i data-lucide="settings"></i><span>Настройки</span></button>
+    </aside>
+    <main id="app" tabindex="-1"></main>
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Мобильная навигация"></nav>
+  </div>
+  <button class="quick-add" id="quick-add"><i data-lucide="plus"></i><span>Добавить</span><kbd>Ctrl K</kbd></button>
+  <div id="modal-root"></div>
+  <div id="toast-root" aria-live="polite"></div>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script src="app.js"></script>
+  <script src="locale-ru.js"></script>
+</body>
+</html>
