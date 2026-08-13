@@ -52,6 +52,25 @@ function decorateToday() {
   const percent = tasks.length ? Math.round(completed / tasks.length * 100) : 0;
   header.insertAdjacentHTML('beforeend', `<div class="hero-portrait" role="img" aria-label="Портрет Людмилы"></div><div class="header-tools" aria-hidden="true"><i data-lucide="search"></i><i data-lucide="bell"></i></div>`);
   side.insertAdjacentHTML('afterbegin', `<section class="panel day-progress"><div class="panel-head"><h2><i data-lucide="chart-no-axes-column-increasing"></i>Прогресс дня</h2></div><div class="progress-overview"><div class="progress-ring" style="--progress:${percent}"><svg viewBox="0 0 44 44" aria-label="Выполнено ${percent}%"><circle cx="22" cy="22" r="18"></circle><circle class="ring-value" cx="22" cy="22" r="18" pathLength="100" style="stroke-dasharray:${percent} 100"></circle></svg><strong>${percent}%</strong></div><div><b>${completed} из ${tasks.length} выполнено</b><span>Маленькие шаги тоже считаются.</span></div></div></section>`);
+  const upcomingPanel = side.querySelectorAll('.panel')[1];
+  const now = new Date();
+  const futureEvent = [...state.events]
+    .map(item => ({ ...item, startsAt: new Date(`${item.date}T${item.startTime || '23:59'}:00`) }))
+    .filter(item => item.startsAt >= now)
+    .sort((a, b) => a.startsAt - b.startsAt)[0];
+  const latestTodayEvent = [...state.events]
+    .filter(item => item.date === today())
+    .sort((a, b) => (b.startTime || '').localeCompare(a.startTime || ''))[0];
+  const upcomingEvent = futureEvent || (latestTodayEvent ? { ...latestTodayEvent, startsAt: new Date(`${latestTodayEvent.date}T${latestTodayEvent.startTime || '23:59'}:00`) } : null);
+  if (upcomingPanel) {
+    if (upcomingEvent) {
+      const isTodayEvent = upcomingEvent.date === today();
+      const dateLabel = isTodayEvent ? 'Сегодня' : upcomingEvent.startsAt.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });
+      upcomingPanel.innerHTML = `<div class="panel-head"><h2>Дальше</h2><i data-lucide="clock-3"></i></div><div class="event"><span class="next-event-date">${dateLabel}</span><strong>${upcomingEvent.startTime || 'Весь день'} — ${esc(upcomingEvent.title)}</strong>${upcomingEvent.description ? `<span class="meta">${esc(upcomingEvent.description)}</span>` : ''}</div>`;
+    } else {
+      upcomingPanel.innerHTML = `<div class="panel-head"><h2>Дальше</h2><i data-lucide="clock-3"></i></div><p class="muted">В календаре пока нет предстоящих событий.</p>`;
+    }
+  }
   const left = page.querySelector('.dashboard-grid > .stack');
   let todayPanel = left?.querySelectorAll('.panel')[1];
   if (!todayPanel && left) {
